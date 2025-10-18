@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Profesional con IA - NutriRed</title>
+    <!-- Tailwind CSS para estilos rápidos y modernos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para una tipografía limpia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para iconografía profesional -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Estilos base y para la gestión de vistas */
+        body { font-family: 'Inter', sans-serif; }
+        .view { display: none; }
+        .active-view { display: block; }
+        .active-flex-view { display: flex; }
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        @keyframes spin {
+            to { transform: rotate(3deg); }
+        }
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #16a34a; /* green-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Este archivo es autoconetenido y está optimizado para su despliegue en servicios como GitHub Pages. -->
+
+    <!-- ====================================================== -->
+    <!-- ============== VISTA DE AUTENTICACIÓN ================== -->
+    <!-- ====================================================== -->
+    <div id="auth-view" class="view active-view">
+        <!-- Pantalla de Login -->
+        <div id="login-screen" class="active-flex-view flex-screen items-center justify-center min-h-screen bg-gray-50">
+            <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg animate-fade-in">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-green-600">NutriRed</h1>
+                    <p class="text-gray-500 mt-2">Bienvenido de nuevo</p>
+                </div>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <input type="email" id="login-email" value="beneficiario@mail.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="login-password" value="12345" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition duration-300 font-semibold">Ingresar</button>
+                </form>
+                <div class="text-center mt-6">
+                    <p class="text-sm">¿No tienes una cuenta? <a href="#" id="go-to-register" class="font-medium text-green-600 hover:underline">Regístrate aquí</a></p>
+                    <button id="login-as-donor" class="mt-2 text-sm text-gray-500 hover:text-green-600">o ingresa como Donante</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Registro -->
+        <div id="register-screen" class="flex-screen items-center justify-center min-h-screen bg-gray-50" style="display: none;">
+            <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+                 <div class="text-center mb-8"><h1 class="text-3xl font-bold text-green-600">Crear Cuenta</h1><p class="text-gray-500 mt-2">Únete a la red para salvar alimentos</p></div>
+                <form id="register-form">
+                    <div class="mb-4"><label for="register-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label><input type="text" id="register-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div>
+                    <div class="mb-4"><label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label><input type="email" id="register-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div>
+                    <div class="mb-4"><label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label><input type="password" id="register-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div>
+                    <div class="mb-6"><label for="register-role" class="block text-sm font-medium text-gray-700 mb-1">¿Cuál es tu rol?</label><select id="register-role" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option value="beneficiary">Soy Beneficiario (ONG, Fundación)</option><option value="donor">Soy Donante (Restaurante, Supermercado)</option></select></div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold">Registrarme</button>
+                    <div class="text-center mt-4"><p class="text-sm">¿Ya tienes una cuenta? <a href="#" id="go-to-login" class="font-medium text-green-600 hover:underline">Inicia sesión</a></p></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- ============ VISTA PRINCIPAL (LOGUEADO) ================ -->
+    <!-- ====================================================== -->
+    <div id="main-view" class="view">
+        <header class="bg-white p-4 shadow-md sticky top-0 z-20">
+            <nav class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-green-600">NutriRed</h1>
+                <div class="flex items-center space-x-6">
+                    <a href="#" id="nav-dashboard" class="nav-link text-green-600 border-b-2 border-green-600 font-semibold pb-1">Panel Principal</a>
+                    <a href="#" id="nav-profile" class="nav-link text-gray-600 hover:text-green-600 font-medium pb-1">Mi Perfil</a>
+                    <button id="logout-button" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition-colors">Salir</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Contenedor único para el contenido principal que se reemplazará dinámicamente -->
+        <main id="main-content-container" class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto"></main>
+    </div>
+    
+    <!-- MODALS -->
+    <div id="notification-modal" class="fixed inset-0 modal-bg flex items-center justify-center z-50" style="display: none;"><div class="bg-white p-6 rounded-lg shadow-xl text-center w-full max-w-sm"><p id="notification-message" class="text-lg"></p><button id="close-notification-modal" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg w-full">Entendido</button></div></div>
+    <div id="details-modal" class="fixed inset-0 modal-bg flex items-center justify-center z-50" style="display: none;"><div id="details-modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden"></div></div>
+    <div id="gemini-modal" class="fixed inset-0 modal-bg flex items-center justify-center z-50" style="display: none;"><div class="bg-white rounded-lg shadow-xl w-full max-w-2xl"><div class="p-6 border-b flex justify-between items-center"><h3 class="text-xl font-bold">Sugerencias de la IA</h3><button id="close-gemini-modal" class="text-gray-500 hover:text-gray-800"><i data-lucide="x"></i></button></div><div id="gemini-modal-content" class="p-6 max-h-[60vh] overflow-y-auto"></div></div></div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- ESTADO Y DATOS DE LA APLICACIÓN ---
+        let currentUser = null;
+        const mockDonations = [
+            {id: 1, title: 'Pan Artesanal Fresco', donor: 'Panadería Del Horno', quantity: '30 unidades', expiry: '2025-10-19', imageUrl: 'https://images.unsplash.com/photo-1598373182133-52452f7691ef?q=80&w=600', category: 'Panadería', status: 'available'},
+            {id: 2, title: 'Verduras y Hortalizas Variadas', donor: 'Supermercado El Campo', quantity: '2 cajas (10kg)', expiry: '2025-10-20', imageUrl: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?q=80&w=600', category: 'Frutas y Verduras', status: 'available'},
+            {id: 3, title: 'Yogures y Lácteos', donor: 'Lácteos Frescura', quantity: '50 unidades', expiry: '2025-10-25', imageUrl: 'https://images.unsplash.com/photo-1559598467-f8b76c8155d0?q=80&w=600', category: 'Lácteos', status: 'requested'},
+            {id: 4, title: 'Comida preparada del día', donor: 'Restaurante Sazón Casero', quantity: '15 porciones', expiry: '2025-10-18', imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=600', category: 'Comida Preparada', status: 'available'},
+            {id: 5, title: 'Manzanas y Bananos', donor: 'Supermercado El Campo', quantity: '1 caja (5kg)', expiry: '2025-10-22', imageUrl: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?q=80&w=600', category: 'Frutas y Verduras', status: 'available'},
+        ];
+        
+        // --- FUNCIONALIDAD DE LA API DE GEMINI ---
+        const API_KEY = ""; // En un entorno real, esta clave no debería estar aquí.
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        
+        async function callGeminiAPI(prompt) {
+            try {
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { throw new Error(`Error de API: ${response.statusText}`); }
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Error al llamar a la API de Gemini:", error);
+                return "Lo sentimos, no se pudieron obtener sugerencias en este momento. Por favor, intenta de nuevo más tarde.";
+            }
+        }
+
+        // --- FUNCIONES DE LÓGICA DE UI ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            document.getElementById(viewId).style.display = 'block';
+        }
+
+        function showAuthScreen(screenId) {
+            document.querySelectorAll('#auth-view .flex-screen').forEach(s => s.style.display = 'none');
+            document.getElementById(screenId).style.display = 'flex';
+        }
+        
+        function showNotification(message) {
+            document.getElementById('notification-message').textContent = message;
+            document.getElementById('notification-modal').style.display = 'flex';
+        }
+        
+        function updateNavLinks(activeLink) {
+            document.querySelectorAll('.nav-link').forEach(a => {
+                a.classList.remove('text-green-600', 'border-b-2', 'border-green-600', 'font-semibold');
+                a.classList.add('text-gray-600', 'font-medium');
+            });
+            if(activeLink) {
+                activeLink.classList.add('text-green-600', 'border-b-2', 'border-green-600', 'font-semibold');
+                activeLink.classList.remove('text-gray-600', 'font-medium');
+            }
+        }
+        
+        // --- FUNCIONES DE RENDERIZADO (CREACIÓN DE HTML) ---
+        function renderPage(pageRenderer) {
+            const container = document.getElementById('main-content-container');
+            container.innerHTML = ''; // Limpiar el contenido anterior
+            pageRenderer(container); // Renderizar el nuevo contenido
+            window.scrollTo(0, 0);
+        }
+
+        function renderBeneficiaryDashboard(container) {
+            updateNavLinks(document.getElementById('nav-dashboard'));
+            const categories = [...new Set(mockDonations.map(d => d.category))];
+            let donationsHTML = mockDonations.map(d => `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative" data-id="${d.id}">
+                    ${d.status === 'requested' ? `<span class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Solicitado</span>` : ''}
+                    <img class="w-full h-48 object-cover" src="${d.imageUrl}" alt="${d.title}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/334155?text=Imagen%20no%20disponible';">
+                    <div class="p-4"><span class="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded-full">${d.category}</span><h3 class="font-bold text-lg mt-2">${d.title}</h3><p class="text-sm text-gray-600">de ${d.donor}</p></div>
+                </div>`).join('');
+
+            container.innerHTML = `
+                <h2 class="text-3xl font-bold mb-2">Hola, ${currentUser.name}</h2>
+                <p class="text-gray-600 mb-6">Encuentra alimentos disponibles cerca de ti.</p>
+                <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4 items-center">
+                    <div class="relative w-full sm:flex-grow"><i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i><input type="text" id="search-input" placeholder="Buscar por producto o donante..." class="w-full pl-10 pr-4 py-2 border rounded-lg"></div>
+                    <div class="flex items-center gap-2 overflow-x-auto">
+                        <button class="filter-btn bg-green-600 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-category="all">Todos</button>
+                        ${categories.map(c => `<button class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm whitespace-nowrap" data-category="${c}">${c}</button>`).join('')}
+                    </div>
+                </div>
+                <div id="donations-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    ${donationsHTML.length > 0 ? donationsHTML : '<p class="text-gray-500 col-span-full text-center py-10">No se encontraron donaciones con estos filtros.</p>'}
+                </div>`;
+            lucide.createIcons();
+            addDashboardEventListeners();
+        }
+
+        function renderDonorDashboard(container) {
+            updateNavLinks(document.getElementById('nav-dashboard'));
+            const myDonations = mockDonations.filter(d => d.donor === currentUser.name);
+            let myDonationsHTML = myDonations.length > 0 ? myDonations.map(d => `<div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center"><div><p class="font-semibold">${d.title} (${d.quantity})</p><p class="text-sm text-gray-500">Vence: ${new Date(d.expiry).toLocaleDateString()}</p></div>${d.status === 'requested' ? `<span class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-3 py-1 rounded-full">Solicitado</span>` : `<span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">Disponible</span>`}</div>`).join('') : '<p class="text-gray-500">Aún no has publicado donaciones.</p>';
+            container.innerHTML = `<div class="max-w-4xl mx-auto"><h2 class="text-3xl font-bold mb-6">Panel de Donante</h2><div class="bg-white p-6 rounded-xl shadow-lg text-center"><h3 class="text-xl font-semibold mb-4">Contribuye a nuestra causa</h3><button id="go-to-new-donation" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 text-lg font-semibold"><i data-lucide="plus" class="inline-block -mt-1 mr-2"></i> Publicar Nueva Donación</button></div><div class="mt-8"><h3 class="text-2xl font-bold mb-4">Mis Donaciones Activas</h3><div class="space-y-3">${myDonationsHTML}</div></div></div>`;
+            lucide.createIcons();
+            addDashboardEventListeners();
+        }
+        
+        function renderNewDonationPage(container) {
+            updateNavLinks(document.getElementById('nav-dashboard')); // Keep dashboard link active
+             container.innerHTML = `<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg"><h2 class="text-2xl font-bold mb-6">Publicar Nueva Donación</h2><form id="new-donation-form"><div class="mb-4"><label for="donation-description" class="block text-sm font-medium text-gray-700 mb-1">Describe brevemente el producto</label><input type="text" id="donation-description" placeholder="Ej: varias verduras, pan del día, etc." class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div><div class="mb-2"><button type="button" id="generate-title-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold flex items-center justify-center gap-2"><i data-lucide="sparkles"></i>Generar Título con IA</button></div><div class="mb-4"><label for="donation-title" class="block text-sm font-medium text-gray-700 mb-1">Título del producto</label><input type="text" id="donation-title" placeholder="El título se generará aquí..." class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" required></div><div class="mb-4"><label for="donation-quantity" class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label><input type="text" id="donation-quantity" placeholder="Ej: 20 unidades" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div><div class="mb-4"><label for="donation-expiry" class="block text-sm font-medium text-gray-700 mb-1">Fecha de vencimiento</label><input type="date" id="donation-expiry" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div><div class="mb-4"><label for="donation-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label><select id="donation-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg"><option>Panadería</option><option>Frutas y Verduras</option><option>Lácteos</option><option>Comida Preparada</option></select></div><div class="mb-6"><label for="donation-image" class="block text-sm font-medium text-gray-700 mb-1">URL de la Imagen del Producto</label><input type="text" id="donation-image" placeholder="https://ejemplo.com/imagen.jpg" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></div><div class="flex space-x-4"><button type="button" class="back-to-dashboard-btn w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 font-semibold">Cancelar</button><button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold">Publicar Donación</button></div></form></div>`;
+             lucide.createIcons();
+             addFormEventListeners();
+        }
+
+        function renderProfilePage(container) {
+            updateNavLinks(document.getElementById('nav-profile'));
+            container.innerHTML = `<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg"><h2 class="text-2xl font-bold mb-6">Mi Perfil</h2><div class="space-y-4"><div class="space-y-2"><label class="font-medium text-gray-600">Nombre Completo</label><p class="w-full p-3 bg-gray-100 rounded-lg">${currentUser.name}</p></div><div class="space-y-2"><label class="font-medium text-gray-600">Correo Electrónico</label><p class="w-full p-3 bg-gray-100 rounded-lg">${currentUser.email}</p></div><div class="space-y-2"><label class="font-medium text-gray-600">Rol</label><p class="w-full p-3 bg-gray-100 rounded-lg capitalize">${currentUser.role === 'donor' ? 'Donante' : 'Beneficiario'}</p></div><div class="pt-4"><button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-semibold">Editar Perfil</button></div></div></div>`;
+        }
+
+        function openDetailsModal(donationId) {
+            const donation = mockDonations.find(d => d.id == donationId);
+            const modalContent = document.getElementById('details-modal-content');
+            modalContent.innerHTML = `<img class="w-full h-60 object-cover" src="${donation.imageUrl}" alt="${donation.title}"><div class="p-6 relative"><button id="close-details-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800"><i data-lucide="x"></i></button><span class="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded-full">${donation.category}</span><h3 class="font-bold text-2xl mt-2">${donation.title}</h3><p class="text-md text-gray-600">de ${donation.donor}</p><div class="mt-4 border-t pt-4 space-y-2"><p><span class="font-semibold">Cantidad:</span> ${donation.quantity}</p><p><span class="font-semibold">Vence:</span> ${new Date(donation.expiry).toLocaleDateString()}</p></div><div class="mt-4"><button id="suggest-recipes-btn" data-product="${donation.title}" class="w-full flex items-center justify-center gap-2 text-indigo-600 font-semibold py-2 rounded-lg hover:bg-indigo-50"><i data-lucide="sparkles"></i>Sugerir Recetas con IA</button></div><div class="mt-4"><p class="font-semibold mb-2">Ubicación (aproximada):</p><div class="h-40 bg-gray-200 rounded-lg flex items-center justify-center"><p class="text-gray-500">Mapa de ubicación aquí</p></div></div><div class="mt-6"><button data-id="${donation.id}" class="request-donation-button w-full py-3 rounded-lg font-semibold text-white ${donation.status === 'available' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}" ${donation.status !== 'available' ? 'disabled' : ''}>${donation.status === 'available' ? 'Solicitar Donación' : 'Ya Solicitado'}</button></div></div>`;
+            lucide.createIcons();
+            document.getElementById('details-modal').style.display = 'flex';
+            document.getElementById('close-details-modal').addEventListener('click', () => { document.getElementById('details-modal').style.display = 'none'; });
+            document.querySelector('#details-modal .request-donation-button').addEventListener('click', handleRequestDonation);
+            document.getElementById('suggest-recipes-btn').addEventListener('click', handleSuggestRecipes);
+        }
+        
+        // --- MANEJO DE EVENTOS (EVENT LISTENERS) ---
+        function addDashboardEventListeners() {
+            if (currentUser.role === 'beneficiary') {
+                document.querySelectorAll('#donations-grid > div').forEach(card => card.addEventListener('click', e => openDetailsModal(e.currentTarget.dataset.id)));
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', e => {
+                    document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('bg-green-600', 'text-white'); b.classList.add('bg-gray-200', 'text-gray-800'); });
+                    e.target.classList.add('bg-green-600', 'text-white'); e.target.classList.remove('bg-gray-200', 'text-gray-800');
+                    filterAndRenderDonations();
+                }));
+                document.getElementById('search-input').addEventListener('input', filterAndRenderDonations);
+            } else {
+                 document.getElementById('go-to-new-donation').addEventListener('click', () => renderPage(renderNewDonationPage));
+            }
+        }
+        
+        function addFormEventListeners() {
+            document.getElementById('new-donation-form').addEventListener('submit', e => {
+                e.preventDefault();
+                mockDonations.unshift({ id: mockDonations.length + 1, title: document.getElementById('donation-title').value, donor: currentUser.name, quantity: document.getElementById('donation-quantity').value, expiry: document.getElementById('donation-expiry').value, imageUrl: document.getElementById('donation-image').value, category: document.getElementById('donation-category').value, status: 'available' });
+                showNotification('¡Tu donación ha sido publicada con éxito!');
+                renderPage(renderDonorDashboard);
+            });
+            document.querySelector('.back-to-dashboard-btn').addEventListener('click', () => renderPage(renderDonorDashboard));
+            document.getElementById('generate-title-btn').addEventListener('click', handleGenerateTitle);
+        }
+
+        function filterAndRenderDonations() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.bg-green-600').dataset.category;
+            let filtered = mockDonations;
+            if (activeFilter !== 'all') filtered = filtered.filter(d => d.category === activeFilter);
+            if (searchTerm) filtered = filtered.filter(d => d.title.toLowerCase().includes(searchTerm) || d.donor.toLowerCase().includes(searchTerm));
+            renderPage(container => renderBeneficiaryDashboard(container, filtered)); // Re-render with filtered data
+            const dashboardContainer = document.getElementById('main-content-container');
+            renderBeneficiaryDashboard(dashboardContainer);
+        }
+
+        function handleRequestDonation(e) {
+            const donationId = e.target.dataset.id;
+            const donation = mockDonations.find(d => d.id == donationId);
+            if (donation && donation.status === 'available') {
+                donation.status = 'requested';
+                showNotification(`¡Solicitud enviada para "${donation.title}"!`);
+                document.getElementById('details-modal').style.display = 'none';
+                renderPage(renderBeneficiaryDashboard);
+            }
+        }
+
+        async function handleSuggestRecipes(e) {
+            const productTitle = e.target.dataset.product;
+            const geminiModalContent = document.getElementById('gemini-modal-content');
+            geminiModalContent.innerHTML = '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>';
+            document.getElementById('gemini-modal').style.display = 'flex';
+            
+            const prompt = `Eres un asistente de cocina enfocado en el aprovechamiento de alimentos. Proporciona 2 recetas sencillas y nutritivas que se pueden preparar usando '${productTitle}'. Formatea tu respuesta en HTML simple usando títulos <h4> para el nombre de la receta y listas <ul> para los ingredientes y pasos.`;
+            const response = await callGeminiAPI(prompt);
+            geminiModalContent.innerHTML = response;
+        }
+
+        async function handleGenerateTitle(e) {
+            const button = e.target.closest('button');
+            const description = document.getElementById('donation-description').value;
+            if (!description) {
+                showNotification("Por favor, describe el producto primero.");
+                return;
+            }
+            button.disabled = true;
+            button.innerHTML = '<div class="loader !w-5 !h-5 !border-2"></div> Generando...';
+
+            const prompt = `Basado en la siguiente descripción de un producto para donación: "${description}", genera un título corto, atractivo y descriptivo. El título debe tener máximo 5 o 6 palabras. Devuelve únicamente el texto del título, sin comillas ni texto adicional.`;
+            const response = await callGeminiAPI(prompt);
+            document.getElementById('donation-title').value = response;
+            
+            button.disabled = false;
+            button.innerHTML = '<i data-lucide="sparkles"></i>Generar Título con IA';
+            lucide.createIcons();
+        }
+        
+        // --- INICIALIZACIÓN DE EVENTOS GLOBALES ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form');
+            if(loginForm) {
+                loginForm.addEventListener('submit', e => {
+                    e.preventDefault();
+                    currentUser = { name: 'Fundación Apoyar', email: document.getElementById('login-email').value, role: 'beneficiary' };
+                    switchView('main-view');
+                    renderPage(renderBeneficiaryDashboard);
+                });
+            }
+
+            document.getElementById('login-as-donor').addEventListener('click', () => {
+                 currentUser = { name: 'Panadería Del Horno', email: "donante@mail.com", role: 'donor' };
+                 switchView('main-view');
+                 renderPage(renderDonorDashboard);
+            });
+            document.getElementById('register-form').addEventListener('submit', e => { e.preventDefault(); showNotification('¡Registro exitoso!'); showAuthScreen('login-screen'); });
+            document.getElementById('go-to-register').addEventListener('click', () => showAuthScreen('register-screen'));
+            document.getElementById('go-to-login').addEventListener('click', () => showAuthScreen('login-screen'));
+            document.getElementById('logout-button').addEventListener('click', () => { currentUser = null; switchView('auth-view'); showAuthScreen('login-screen'); });
+            document.getElementById('nav-dashboard').addEventListener('click', () => {
+                const renderer = currentUser.role === 'beneficiary' ? renderBeneficiaryDashboard : renderDonorDashboard;
+                renderPage(renderer);
+            });
+            document.getElementById('nav-profile').addEventListener('click', () => { renderPage(renderProfilePage); });
+            document.getElementById('close-notification-modal').addEventListener('click', () => { document.getElementById('notification-modal').style.display = 'none'; });
+            document.getElementById('close-gemini-modal').addEventListener('click', () => { document.getElementById('gemini-modal').style.display = 'none'; });
+        });
+    </script>
+</body>
+</html>
+
